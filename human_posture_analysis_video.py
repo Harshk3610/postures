@@ -3,12 +3,10 @@ import time
 import math as m
 import mediapipe as mp
 
-
 # Calculate distance
 def findDistance(x1, y1, x2, y2):
     dist = m.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     return dist
-
 
 # Calculate angle.
 def findAngle(x1, y1, x2, y2):
@@ -17,16 +15,12 @@ def findAngle(x1, y1, x2, y2):
     degree = int(180 / m.pi) * theta
     return degree
 
-
 """
 Function to send alert. Use this function to send alert when bad posture detected.
 Feel free to get creative and customize as per your convenience.
 """
-
-
 def sendWarning(x):
     pass
-
 
 # =============================CONSTANTS and INITIALIZATIONS=====================================#
 # Initilize frame counters.
@@ -48,13 +42,18 @@ pink = (255, 0, 255)
 # Initialize mediapipe pose class.
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
+
 # ===============================================================================================#
 
-
 if __name__ == "__main__":
-    # For webcam input replace file name with 0.
-    file_name = 0
+    # Initialize video capture.
+    file_name = 0  # Use webcam, change to video file if needed
     cap = cv2.VideoCapture(file_name)
+
+    # Check if the camera opened successfully
+    if not cap.isOpened():
+        print("Error: Could not open camera.")
+        exit()
 
     # Meta.
     fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -66,7 +65,7 @@ if __name__ == "__main__":
     # Video writer.
     video_output = cv2.VideoWriter('output.mp4', fourcc, fps, frame_size)
 
-    while cap.isOpened():
+    while True:
         # Capture frames.
         success, image = cap.read()
         if not success:
@@ -91,28 +90,28 @@ if __name__ == "__main__":
         lmPose = mp_pose.PoseLandmark
 
         if lm is not None and lm.landmark is not None:
-    # Acquire the landmark coordinates.
-    # Once aligned properly, left or right should not be a concern.      
-    # Left shoulder.
+            # Acquire the landmark coordinates.
+            # Once aligned properly, left or right should not be a concern.
+            # Left shoulder.
             l_shldr_x = int(lm.landmark[lmPose.LEFT_SHOULDER].x * w)
             l_shldr_y = int(lm.landmark[lmPose.LEFT_SHOULDER].y * h)
-    # Right shoulder
+            # Right shoulder
             r_shldr_x = int(lm.landmark[lmPose.RIGHT_SHOULDER].x * w)
             r_shldr_y = int(lm.landmark[lmPose.RIGHT_SHOULDER].y * h)
-    # Left ear.
+            # Left ear.
             l_ear_x = int(lm.landmark[lmPose.LEFT_EAR].x * w)
             l_ear_y = int(lm.landmark[lmPose.LEFT_EAR].y * h)
-    # Left hip.
+            # Left hip.
             l_hip_x = int(lm.landmark[lmPose.LEFT_HIP].x * w)
             l_hip_y = int(lm.landmark[lmPose.LEFT_HIP].y * h)
 
-    # Calculate distance between left shoulder and right shoulder points.
+            # Calculate distance between left shoulder and right shoulder points.
             offset = findDistance(l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y)
         else:
-    # Handle the case when no landmarks are detected.
-    # You can print a message, skip processing, or take alternative actions.
+            # Handle the case when no landmarks are detected.
+            # You can print a message, skip processing, or take alternative actions.
             print("No landmarks detected in the frame.")
-
+            continue
 
         # Assist to align the camera to point at the side view of the person.
         # Offset threshold 30 is based on results obtained from analysis over 100 samples.
@@ -128,19 +127,12 @@ if __name__ == "__main__":
         # Draw landmarks.
         cv2.circle(image, (l_shldr_x, l_shldr_y), 7, yellow, -1)
         cv2.circle(image, (l_ear_x, l_ear_y), 7, yellow, -1)
-
-        # Let's take y - coordinate of P3 100px above x1,  for display elegance.
-        # Although we are taking y = 0 while calculating angle between P1,P2,P3.
         cv2.circle(image, (l_shldr_x, l_shldr_y - 100), 7, yellow, -1)
         cv2.circle(image, (r_shldr_x, r_shldr_y), 7, pink, -1)
         cv2.circle(image, (l_hip_x, l_hip_y), 7, yellow, -1)
-
-        # Similarly, here we are taking y - coordinate 100px above x1. Note that
-        # you can take any value for y, not necessarily 100 or 200 pixels.
         cv2.circle(image, (l_hip_x, l_hip_y - 100), 7, yellow, -1)
 
         # Put text, Posture and angle inclination.
-        # Text string for display.
         angle_text_string = 'Neck : ' + str(int(neck_inclination)) + '  Torso : ' + str(int(torso_inclination))
 
         # Determine whether good posture or bad posture.
@@ -148,7 +140,7 @@ if __name__ == "__main__":
         if neck_inclination < 40 and torso_inclination < 10:
             bad_frames = 0
             good_frames += 1
-            
+
             cv2.putText(image, angle_text_string, (10, 30), font, 0.9, light_green, 2)
             cv2.putText(image, str(int(neck_inclination)), (l_shldr_x + 10, l_shldr_y), font, 0.9, light_green, 2)
             cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, 0.9, light_green, 2)
@@ -175,7 +167,7 @@ if __name__ == "__main__":
 
         # Calculate the time of remaining in a particular posture.
         good_time = (1 / fps) * good_frames
-        bad_time =  (1 / fps) * bad_frames
+        bad_time = (1 / fps) * bad_frames
 
         # Pose time.
         if good_time > 0:
@@ -188,6 +180,7 @@ if __name__ == "__main__":
         # If you stay in bad posture for more than 3 minutes (180s) send an alert.
         if bad_time > 180:
             sendWarning()
+
         # Write frames.
         video_output.write(image)
 
@@ -196,4 +189,6 @@ if __name__ == "__main__":
         if cv2.waitKey(5) & 0xFF == ord('q'):
             break
 
-cap.release()
+    cap.release()
+    video_output.release()
+ 
