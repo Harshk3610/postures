@@ -2,6 +2,8 @@ import cv2
 import time
 import math as m
 import mediapipe as mp
+import streamlit as st
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, WebRtcClientSettings
 
 # Calculate distance
 def findDistance(x1, y1, x2, y2):
@@ -45,34 +47,33 @@ pose = mp_pose.Pose()
 
 # ===============================================================================================#
 
-if __name__ == "__main__":
-    # Initialize video capture.
-    file_name = 0  # Use webcam, change to video file if needed
-    cap = cv2.VideoCapture(file_name)
+def main():
+    # Streamlit app title
+    st.title("Posture Detection with Streamlit and MediaPipe")
 
-    # Check if the camera opened successfully
-    if not cap.isOpened():
-        print("Error: Could not open camera.")
-        exit()
+    # WebRTC streamer configuration
+    webrtc_ctx = webrtc_streamer(
+        key="example",
+        mode=WebRtcMode.SENDRECV,
+        client_settings=WebRtcClientSettings(
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            media_stream_constraints={"video": True},
+        ),
+    )
 
-    # Meta.
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    frame_size = (width, height)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    if webrtc_ctx.video_receiver:
+        # Start processing frames when video stream is received
+        process_frames(webrtc_ctx.video_receiver)
 
-    # Video writer.
-    video_output = cv2.VideoWriter('output.mp4', fourcc, fps, frame_size)
-
+def process_frames(video_receiver):
     while True:
         # Capture frames.
-        success, image = cap.read()
+        success, image = video_receiver.read()
+
         if not success:
             print("Null.Frames")
             break
-        # Get fps.
-        fps = cap.get(cv2.CAP_PROP_FPS)
+
         # Get height and width.
         h, w = image.shape[:2]
 
@@ -181,14 +182,8 @@ if __name__ == "__main__":
         if bad_time > 180:
             sendWarning()
 
-        # Write frames.
-        video_output.write(image)
+        # Display image in Streamlit
+        st.image(image, channels="BGR")
 
-        # Display.
-        cv2.imshow('MediaPipe Pose', image)
-        if cv2.waitKey(5) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    video_output.release()
- 
+if __name__ == "__main__":
+    main()
