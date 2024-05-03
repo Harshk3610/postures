@@ -1,6 +1,6 @@
 mediapipe
 streamlit
 opencv-python-headless
-
+streamlit-webrtc
 
 python-math
