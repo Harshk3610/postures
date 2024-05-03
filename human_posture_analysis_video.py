@@ -3,7 +3,8 @@ import time
 import math as m
 import mediapipe as mp
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, WebRtcClientSettings
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
+from aiortc import RTCIceServer
 
 # Calculate distance
 def findDistance(x1, y1, x2, y2):
@@ -55,10 +56,8 @@ def main():
     webrtc_ctx = webrtc_streamer(
         key="example",
         mode=WebRtcMode.SENDRECV,
-        client_settings=WebRtcClientSettings(
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-            media_stream_constraints={"video": True},
-        ),
+        rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+        async_processing=True,
     )
 
     if webrtc_ctx.video_receiver:
