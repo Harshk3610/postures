@@ -18,7 +18,7 @@ def findAngle(x1, y1, x2, y2):
     return degree
 
 # Function to send alert
-def sendWarning():
+#def sendWarning():
     #pygame.mixer.music.load('mixkit-classic-short-alarm-993.wav')
    # pygame.mixer.music.play()
 
