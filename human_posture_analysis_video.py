@@ -2,7 +2,7 @@ import cv2
 import time
 import math as m
 import mediapipe as mp
-import pygame
+#import pygame
 
 # Initialize pygame mixer
 pygame.mixer.init()
@@ -19,7 +19,7 @@ def findAngle(x1, y1, x2, y2):
     return degree
 
 # Function to send alert.
-def sendWarning():
+#def sendWarning():
     pygame.mixer.music.load('mixkit-classic-short-alarm-993.wav')
     pygame.mixer.music.play()
 
@@ -108,7 +108,7 @@ def process_frame(image, fps):
         time_string_bad = 'Bad Posture Time : ' + str(round(bad_time, 1)) + 's'
         cv2.putText(image, time_string_bad, (10, h - 20), font, 0.9, red, 2)
 
-    if bad_time > 3:
+    #if bad_time > 3:
         sendWarning()
 
     return image
