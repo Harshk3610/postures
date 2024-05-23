@@ -4,4 +4,4 @@ opencv-python-headless
 streamlit-webrtc
 pygame
 
-
+pyaudio sounddevice
