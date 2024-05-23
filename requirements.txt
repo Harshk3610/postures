@@ -1,6 +1,6 @@
 mediapipe
 streamlit
-opencv-python-headless
+opencv-python
 streamlit-webrtc
 pygame
 
