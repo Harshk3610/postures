@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
-from posture_detection import process_frame  # assuming your code is in posture_detection.py
+from human_posture_analysis_video import process_frame  # assuming your code is in posture_detection.py
 
 # Title
 st.title('Sitting Posture Detection')
