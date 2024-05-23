@@ -1,9 +1,8 @@
-
-
 import streamlit as st
 import cv2
 import numpy as np
-from human_posture_analysis_video import process_frame  # assuming your code is in posture_detection.py
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+from posture_detection import process_frame  # assuming your code is in posture_detection.py
 
 # Title
 st.title('Sitting Posture Detection')
@@ -15,29 +14,20 @@ st.markdown("""
     This deployed model uses the live feed from the camera to detect the sitting posture.
 """)
 
-# Button to start the camera
-if st.button('Use Camera'):
-    
-    
-    frameST = st.empty()
+# Define the VideoTransformer
+class VideoTransformer(VideoTransformerBase):
+    def __init__(self):
+        self.fps = 30  # Assume a standard fps if actual fps cannot be determined
 
-    # Start webcam
-    cap = cv2.VideoCapture(0)
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        # Get fps
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        if fps == 0:
-            fps = 30  # Assume a standard fps if actual fps cannot be determined
+    def transform(self, frame):
+        img = frame.to_ndarray(format="bgr24")
 
         # Process the frame
-        output_frame = process_frame(frame, fps)
+        output_frame = process_frame(img, self.fps)
 
-        # Display the frame
-        frameST.image(output_frame, channels='BGR')
+        return output_frame
 
-    cap.release()
+# Button to start the camera
+if st.button('Use Camera'):
+    webrtc_streamer(key="example", video_processor_factory=VideoTransformer)
+
