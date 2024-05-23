@@ -1,26 +1,26 @@
 import cv2
-import time
 import math as m
 import mediapipe as mp
-#import pygame
+import pygame
 
-# Initialize pygame mixer pygame.mixer.init()
+# Initialize pygame mixer for audio alerts
+pygame.mixer.init()
 
 # Calculate distance
 def findDistance(x1, y1, x2, y2):
     dist = m.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     return dist
 
-# Calculate angle.
+# Calculate angle
 def findAngle(x1, y1, x2, y2):
     theta = m.acos((y2 - y1) * (-y1) / (m.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) * y1))
     degree = int(180 / m.pi * theta)
     return degree
 
-# Function to send alert.
-#def sendWarning():
-    #pygame.mixer.music.load('mixkit-classic-short-alarm-993.wav')
-    #pygame.mixer.music.play()
+# Function to send alert
+def sendWarning():
+    pygame.mixer.music.load('mixkit-classic-short-alarm-993.wav')
+    pygame.mixer.music.play()
 
 # Constants and Initializations
 good_frames = 0
@@ -38,6 +38,7 @@ pose = mp_pose.Pose()
 
 def process_frame(image, fps):
     global good_frames, bad_frames
+
     h, w = image.shape[:2]
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     keypoints = pose.process(image)
@@ -107,7 +108,7 @@ def process_frame(image, fps):
         time_string_bad = 'Bad Posture Time : ' + str(round(bad_time, 1)) + 's'
         cv2.putText(image, time_string_bad, (10, h - 20), font, 0.9, red, 2)
 
-    #if bad_time > 3:
-        #sendWarning()
+    if bad_time > 3:
+        sendWarning()
 
     return image
