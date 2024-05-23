@@ -2,5 +2,5 @@ mediapipe
 streamlit
 opencv-python-headless
 streamlit-webrtc
-
+pygame
 python-math
